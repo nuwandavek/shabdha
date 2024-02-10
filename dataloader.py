@@ -1,6 +1,7 @@
 import json
 import pandas as pd
 from pathlib import Path
+from torch.utils.data import TensorDataset, DataLoader
 
 
 class Tokenizer:
@@ -30,17 +31,39 @@ class Tokenizer:
 class Dataset:
   def _init__(self, data_path):
     self.data_path = data_path
-    self.train_df, self.test_df, self.val_df = self.load_data(data_path)
+    self.tokenizer = Tokenizer()
+    self.df_dict = self.load_data(data_path)
 
   def load_data(self, data_path):
+    df_dict = {}
     for file in Path(data_path).glob("*.json"):
       with open(file) as fob:
         data = [json.loads(x) for x in fob.read().strip().split("\n")]
         df = pd.DataFrame(data)
       if "train" in file.name:
-        train_df = df
+        df_dict["train"] = df
       elif "test" in file.name:
-        test_df = df
+        df_dict["test"] = df
       elif "val" in file.name:
-        val_df = df
-    return train_df, test_df, val_df
+        df_dict['val'] = df
+    return df_dict
+
+  def create_dataset(self):
+    
+  
+  def get_dataset(self, split):
+    df = self.df_dict[split]
+
+    return 
+
+
+  def explode_rows(self, row):
+    native_word_tokens = self.tokenizer.encode(row['native_word']) + [self.tokenizer.vocab['|START|']]
+    english_word_tokens = self.tokenizer.encode(row['english_word']) + [self.tokenizer.vocab['|END|']]
+    rows = []
+    for i in range(len(english_word_tokens)):
+      rows.append(native_word_tokens + english_word_tokens[:i])
+    
+
+
+
